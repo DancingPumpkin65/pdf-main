@@ -1,0 +1,216 @@
+import type { ReactElement } from 'react'
+import { InvoiceClassicDocument } from '@/blocks/pdfx/invoice-classic/invoice-classic'
+import { InvoiceMinimalDocument } from '@/blocks/pdfx/invoice-minimal/invoice-minimal'
+import { InvoiceModernDocument } from '@/blocks/pdfx/invoice-modern/invoice-modern'
+import { theme as professionalTheme, type PdfxTheme } from '@/lib/pdfx-theme'
+import {
+  parseProjectFile,
+  type BlockNode,
+  type ProjectFile,
+  type ThemePreset,
+} from './project-schema'
+import { templateCatalogById } from './template-catalog'
+
+type CompiledInvoiceData = {
+  invoiceNumber: string
+  invoiceDate: string
+  dueDate: string
+  companyName: string
+  subtitle: string
+  companyAddress: string
+  companyEmail: string
+  logo?: string
+  billTo: {
+    name: string
+    address: string
+    email: string
+    phone: string
+  }
+  items: Array<{
+    description: string
+    quantity: number
+    unitPrice: number
+  }>
+  summary: {
+    subtotal: number
+    tax: number
+    total: number
+  }
+  paymentTerms: {
+    dueDate: string
+    method: string
+    gst: string
+  }
+  notes?: string
+}
+
+export type CompiledProject = {
+  project: ProjectFile
+  template: (typeof templateCatalogById)[ProjectFile['templateId']]
+  theme: PdfxTheme
+  data: CompiledInvoiceData
+  document: ReactElement
+  visibleBlocks: BlockNode[]
+}
+
+function cloneTheme(theme: PdfxTheme): PdfxTheme {
+  return {
+    ...theme,
+    primitives: {
+      ...theme.primitives,
+      typography: { ...theme.primitives.typography },
+      spacing: { ...theme.primitives.spacing },
+      fontWeights: { ...theme.primitives.fontWeights },
+      lineHeights: { ...theme.primitives.lineHeights },
+      borderRadius: { ...theme.primitives.borderRadius },
+      letterSpacing: { ...theme.primitives.letterSpacing },
+    },
+    colors: { ...theme.colors },
+    typography: {
+      body: { ...theme.typography.body },
+      heading: {
+        ...theme.typography.heading,
+        fontSize: { ...theme.typography.heading.fontSize },
+      },
+    },
+    spacing: {
+      ...theme.spacing,
+      page: { ...theme.spacing.page },
+    },
+    page: { ...theme.page },
+  }
+}
+
+function createThemeFromPreset(preset: ThemePreset): PdfxTheme {
+  const base = cloneTheme(professionalTheme)
+
+  if (preset === 'modern') {
+    base.name = 'modern'
+    base.colors = {
+      ...base.colors,
+      foreground: '#132238',
+      primary: '#0f2d4f',
+      primaryForeground: '#f5f7fb',
+      accent: '#0f766e',
+      border: '#bfd2de',
+      muted: '#e8f0f4',
+      mutedForeground: '#587089',
+      info: '#1d4ed8',
+    }
+    base.typography.heading.fontFamily = 'Helvetica-Bold'
+    base.typography.heading.fontSize.h1 = 30
+    base.spacing.sectionGap = 24
+    return base
+  }
+
+  if (preset === 'minimal') {
+    base.name = 'minimal'
+    base.colors = {
+      ...base.colors,
+      foreground: '#101010',
+      primary: '#101010',
+      primaryForeground: '#faf7f2',
+      accent: '#525252',
+      border: '#d0d0d0',
+      muted: '#f6f4ef',
+      mutedForeground: '#6b6b6b',
+      warning: '#8c6b2f',
+    }
+    base.typography.heading.fontFamily = 'Helvetica'
+    base.typography.heading.fontWeight = 600
+    base.typography.heading.fontSize.h1 = 26
+    base.typography.body.fontSize = 10
+    base.spacing.sectionGap = 22
+    base.spacing.componentGap = 10
+  }
+
+  return base
+}
+
+function findBlock(project: ProjectFile, type: BlockNode['type']) {
+  return project.blocks.find((block) => block.type === type)
+}
+
+function assertBlock<TType extends BlockNode['type']>(
+  project: ProjectFile,
+  type: TType,
+): Extract<BlockNode, { type: TType }> {
+  const block = findBlock(project, type)
+  if (!block) {
+    throw new Error(`Missing required block: ${type}`)
+  }
+
+  return block as Extract<BlockNode, { type: TType }>
+}
+
+function compileInvoiceData(project: ProjectFile): CompiledInvoiceData {
+  const header = assertBlock(project, 'invoice-header')
+  const billing = assertBlock(project, 'invoice-billing')
+  const payment = assertBlock(project, 'invoice-payment')
+  const items = assertBlock(project, 'invoice-items')
+  const totals = assertBlock(project, 'invoice-totals')
+  const notes = findBlock(project, 'invoice-notes') as Extract<
+    BlockNode,
+    { type: 'invoice-notes' }
+  > | null
+
+  return {
+    invoiceNumber: billing.props.invoiceNumber,
+    invoiceDate: billing.props.invoiceDate,
+    dueDate: billing.props.dueDate,
+    companyName: header.props.companyName,
+    subtitle: header.props.subtitle,
+    companyAddress: header.props.companyAddress,
+    companyEmail: header.props.companyEmail,
+    logo: header.props.logo,
+    billTo: billing.props.client,
+    items: items.props.items.map((item) => ({
+      description: item.description,
+      quantity: item.quantity,
+      unitPrice: item.unitPrice,
+    })),
+    summary: {
+      subtotal: totals.props.subtotal,
+      tax: totals.props.tax,
+      total: totals.props.total,
+    },
+    paymentTerms: {
+      dueDate: payment.props.dueDate,
+      method: payment.props.method,
+      gst: payment.props.gst,
+    },
+    notes: notes?.props.content || undefined,
+  }
+}
+
+function renderDocument(project: ProjectFile, theme: PdfxTheme, data: CompiledInvoiceData) {
+  switch (project.templateId) {
+    case 'invoice-classic':
+      return <InvoiceClassicDocument theme={theme} data={data} />
+    case 'invoice-modern':
+      return <InvoiceModernDocument theme={theme} data={data} />
+    case 'invoice-minimal':
+      return <InvoiceMinimalDocument theme={theme} data={data} />
+    default:
+      throw new Error(`Unsupported template: ${project.templateId satisfies never}`)
+  }
+}
+
+export function compileProject(input: ProjectFile): CompiledProject {
+  const project = parseProjectFile(input)
+  const data = compileInvoiceData(project)
+  const theme = createThemeFromPreset(project.themePreset)
+
+  return {
+    project,
+    template: templateCatalogById[project.templateId],
+    theme,
+    data,
+    document: renderDocument(project, theme, data),
+    visibleBlocks: project.blocks.filter((block) => !block.hidden),
+  }
+}
+
+export function getThemeForPreset(preset: ThemePreset): PdfxTheme {
+  return createThemeFromPreset(preset)
+}
