@@ -12,33 +12,8 @@ import {
 import { MarketingNavbar } from '@ds/components/MarketingNavbar'
 import { ThemeIconButton } from '@ds/components/ThemeIconButton'
 import { useTheme } from '@ds/theme/ThemeProvider'
-
-const templates = [
-  {
-    slug: 'invoice-classic',
-    title: 'Classic',
-    label: 'Professional',
-    description:
-      'Logo-left header, structured billing bands, and a zebra-striped line item table.',
-    blocks: ['Header', 'Billing', 'Items', 'Totals'],
-  },
-  {
-    slug: 'invoice-modern',
-    title: 'Modern',
-    label: 'Branded',
-    description:
-      'Full-width banner header with a sharper hierarchy for client-facing branded invoices.',
-    blocks: ['Banner', 'Meta strip', 'Table', 'Summary'],
-  },
-  {
-    slug: 'invoice-minimal',
-    title: 'Minimal',
-    label: 'Editorial',
-    description:
-      'Compact spacing and lean typography tuned for low-noise proposals and retainers.',
-    blocks: ['Stamp', 'Client info', 'Compact items', 'Notes'],
-  },
-] as const
+import { useProjectStore } from '@/lib/project-store'
+import { themePresetLabels } from '@/lib/template-catalog'
 
 const rails = [
   {
@@ -60,6 +35,14 @@ const rails = [
 
 function App() {
   const { theme, toggleTheme } = useTheme()
+  const {
+    project,
+    compiledProject,
+    templates,
+    selectTemplate,
+    setThemePreset,
+    selectedBlock,
+  } = useProjectStore()
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -98,13 +81,17 @@ function App() {
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                   Source
                 </p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">Copy-paste PDFx</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-tight">
+                  {compiledProject.template.title} template
+                </p>
               </div>
               <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
                   Mode
                 </p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">Preview first</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-tight">
+                  {themePresetLabels[project.themePreset]}
+                </p>
               </div>
               <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
@@ -131,11 +118,15 @@ function App() {
             <CardContent className="space-y-3 pt-0">
               {templates.map((template) => (
                 <div
-                  key={template.slug}
-                  className="border-2 border-[var(--foreground-inverse)]/70 bg-[var(--foreground-inverse)]/8 p-4"
+                  key={template.id}
+                  className={`border-2 p-4 ${
+                    project.templateId === template.id
+                      ? 'border-[var(--accent-light)] bg-[var(--accent)]/25'
+                      : 'border-[var(--foreground-inverse)]/70 bg-[var(--foreground-inverse)]/8'
+                  }`}
                 >
                   <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-inverse)]/70">
-                    {template.slug}
+                    {template.id}
                   </p>
                   <p className="mt-2 text-lg font-black uppercase tracking-tight">{template.title}</p>
                 </div>
@@ -158,12 +149,12 @@ function App() {
 
           <div className="mt-6 grid gap-6 xl:grid-cols-3">
             {templates.map((template) => (
-              <Card key={template.slug} className="flex h-full flex-col">
+              <Card key={template.id} className="flex h-full flex-col">
                 <CardHeader className="border-b-2 border-[var(--border)]">
                   <div className="flex items-center justify-between gap-3">
                     <Badge variant="outline">{template.label}</Badge>
                     <span className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
-                      {template.slug}
+                      {template.id}
                     </span>
                   </div>
                   <CardTitle className="text-3xl">{template.title}</CardTitle>
@@ -173,7 +164,7 @@ function App() {
                 </CardHeader>
                 <CardContent className="flex-1 pt-6">
                   <div className="flex flex-wrap gap-2">
-                    {template.blocks.map((block) => (
+                    {template.blockLabels.map((block) => (
                       <Badge key={block} variant="secondary">
                         {block}
                       </Badge>
@@ -181,8 +172,12 @@ function App() {
                   </div>
                 </CardContent>
                 <CardFooter className="pt-0">
-                  <Button variant="outline" className="w-full">
-                    Select Template
+                  <Button
+                    variant={project.templateId === template.id ? 'primary' : 'outline'}
+                    className="w-full"
+                    onClick={() => selectTemplate(template.id)}
+                  >
+                    {project.templateId === template.id ? 'Selected' : 'Select Template'}
                   </Button>
                 </CardFooter>
               </Card>
@@ -201,6 +196,43 @@ function App() {
                   theme tokens stay editable in the app workspace.
                 </CardDescription>
               </CardHeader>
+              <CardContent className="space-y-4 pt-6">
+                <div className="flex flex-wrap gap-2">
+                  {compiledProject.template.supportedThemePresets.map((preset) => (
+                    <Button
+                      key={preset}
+                      size="sm"
+                      variant={project.themePreset === preset ? 'primary' : 'outline'}
+                      onClick={() => setThemePreset(preset)}
+                    >
+                      {themePresetLabels[preset]}
+                    </Button>
+                  ))}
+                </div>
+                <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
+                  <p className="font-bold uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                    Project
+                  </p>
+                  <p className="mt-3 text-lg font-black uppercase tracking-tight">
+                    {project.metadata.name}
+                  </p>
+                  <p className="mt-2 leading-6 text-[var(--foreground)]">
+                    {project.metadata.description}
+                  </p>
+                </div>
+                <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
+                  <p className="font-bold uppercase tracking-[0.18em] text-[var(--foreground-muted)]">
+                    Current focus
+                  </p>
+                  <p className="mt-3 text-lg font-black uppercase tracking-tight">
+                    {selectedBlock?.label ?? 'Header'}
+                  </p>
+                  <p className="mt-2 leading-6 text-[var(--foreground)]">
+                    {compiledProject.visibleBlocks.length} visible blocks ready for the preview
+                    and editor phases.
+                  </p>
+                </div>
+              </CardContent>
             </Card>
 
             <div className="grid gap-4 sm:grid-cols-3">
