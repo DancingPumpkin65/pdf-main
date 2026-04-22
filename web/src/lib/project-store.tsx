@@ -8,7 +8,6 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { compileProject } from './project-compiler'
 import {
   parseProjectFile,
   safeParseProjectFile,
@@ -25,7 +24,6 @@ const STORAGE_KEY = 'pdfx-studio.project'
 
 type ProjectContextValue = {
   project: ProjectFile
-  compiledProject: ReturnType<typeof compileProject>
   templates: typeof templateCatalog
   selectedBlockId: string | null
   selectedBlock: BlockNode | null
@@ -105,7 +103,6 @@ export function ProjectStoreProvider({ children }: { children: ReactNode }) {
     window.localStorage.setItem(STORAGE_KEY, serializeProjectFile(project))
   }, [project])
 
-  const compiledProject = useMemo(() => compileProject(project), [project])
   const resolvedSelectedBlockId = project.blocks.some((block) => block.id === selectedBlockId)
     ? selectedBlockId
     : getFirstBlockId(project)
@@ -121,7 +118,6 @@ export function ProjectStoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<ProjectContextValue>(
     () => ({
       project,
-      compiledProject,
       templates: templateCatalog,
       selectedBlockId: resolvedSelectedBlockId,
       selectedBlock,
@@ -217,7 +213,7 @@ export function ProjectStoreProvider({ children }: { children: ReactNode }) {
       },
       exportProjectJson: () => serializeProjectFile(project),
     }),
-    [compiledProject, project, resolvedSelectedBlockId, selectedBlock],
+    [project, resolvedSelectedBlockId, selectedBlock],
   )
 
   return <ProjectStoreContext.Provider value={value}>{children}</ProjectStoreContext.Provider>
