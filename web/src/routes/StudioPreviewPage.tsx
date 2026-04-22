@@ -9,10 +9,12 @@ import { SplitPane } from '@/components/studio/SplitPane'
 import { StudioFrame } from '@/components/studio/StudioFrame'
 import { Textarea } from '@/components/studio/Textarea'
 import { ThemeSwatch } from '@/components/studio/ThemeSwatch'
+import { compileProject } from '@/lib/project-compiler'
 import { useProjectStore } from '@/lib/project-store'
 
 export function StudioPreviewPage() {
-  const { project, compiledProject, selectedBlockId, setSelectedBlockId, updateMetadata, setThemePreset, importProjectJson, exportProjectJson } = useProjectStore()
+  const { project, selectedBlockId, setSelectedBlockId, updateMetadata, setThemePreset, importProjectJson, exportProjectJson } = useProjectStore()
+  const compiledProject = compileProject(project)
   const deferredDocument = useDeferredValue(compiledProject.document)
   const [importValue, setImportValue] = useState('')
   const [importError, setImportError] = useState<string | null>(null)

@@ -4,10 +4,12 @@ import { InspectorPanel } from '@/components/studio/InspectorPanel'
 import { PDFPreviewSurface } from '@/components/studio/PDFPreviewSurface'
 import { StudioFrame } from '@/components/studio/StudioFrame'
 import { TimelineTrack } from '@/components/studio/TimelineTrack'
+import { compileProject } from '@/lib/project-compiler'
 import { useProjectStore } from '@/lib/project-store'
 
 export function StudioEditorPage() {
-  const { project, compiledProject, templates, selectTemplate, selectedBlock, selectedBlockId, setSelectedBlockId, updateBlock, duplicateBlock, removeBlock, reorderBlocks } = useProjectStore()
+  const { project, templates, selectTemplate, selectedBlock, selectedBlockId, setSelectedBlockId, updateBlock, duplicateBlock, removeBlock, reorderBlocks } = useProjectStore()
+  const compiledProject = compileProject(project)
 
   return (
     <StudioFrame title="Editor">
