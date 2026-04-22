@@ -15,7 +15,7 @@ import { useTheme } from '@ds/theme/ThemeProvider'
 import { TemplateTile } from '@/components/studio/TemplateTile'
 import { ThemeSwatch } from '@/components/studio/ThemeSwatch'
 import { useProjectStore } from '@/lib/project-store'
-import { themePresetLabels } from '@/lib/template-catalog'
+import { templateCatalogById, themePresetLabels } from '@/lib/template-catalog'
 
 const rails = [
   { title: 'PDF blocks', copy: 'Installed local source for classic, modern, and minimal invoice templates.', icon: Layers3 },
@@ -25,8 +25,9 @@ const rails = [
 
 export function LandingPage() {
   const { theme, toggleTheme } = useTheme()
-  const { project, compiledProject, templates, selectTemplate, setThemePreset, selectedBlock } =
-    useProjectStore()
+  const { project, templates, selectTemplate, setThemePreset, selectedBlock } = useProjectStore()
+  const activeTemplate = templateCatalogById[project.templateId]
+  const visibleBlocks = project.blocks.filter((block) => !block.hidden)
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -56,7 +57,7 @@ export function LandingPage() {
             <CardContent className="grid gap-4 pt-6 sm:grid-cols-3">
               <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Template</p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">{compiledProject.template.title}</p>
+                <p className="mt-3 text-lg font-black uppercase tracking-tight">{activeTemplate.title}</p>
               </div>
               <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
                 <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Theme</p>
@@ -117,7 +118,7 @@ export function LandingPage() {
               </CardHeader>
               <CardContent className="space-y-4 pt-6">
                 <div className="grid gap-2 sm:grid-cols-3">
-                  {compiledProject.template.supportedThemePresets.map((preset) => (
+                  {activeTemplate.supportedThemePresets.map((preset) => (
                     <ThemeSwatch key={preset} preset={preset} active={project.themePreset === preset} onClick={() => setThemePreset(preset)} />
                   ))}
                 </div>
@@ -129,7 +130,7 @@ export function LandingPage() {
                 <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
                   <p className="font-bold uppercase tracking-[0.18em] text-[var(--foreground-muted)]">Current focus</p>
                   <p className="mt-3 text-lg font-black uppercase tracking-tight">{selectedBlock?.label ?? 'Header'}</p>
-                  <p className="mt-2 leading-6 text-[var(--foreground)]">{compiledProject.visibleBlocks.length} visible blocks currently feed the PDF compiler and the editor timeline.</p>
+                  <p className="mt-2 leading-6 text-[var(--foreground)]">{visibleBlocks.length} visible blocks currently feed the PDF compiler and the editor timeline.</p>
                 </div>
               </CardContent>
             </Card>
