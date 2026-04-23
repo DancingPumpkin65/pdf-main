@@ -1,17 +1,15 @@
 import type { ReactElement } from 'react'
-import { InvoiceClassicDocument } from '@/blocks/pdfx/invoice-classic/invoice-classic'
-import { InvoiceMinimalDocument } from '@/blocks/pdfx/invoice-minimal/invoice-minimal'
-import { InvoiceModernDocument } from '@/blocks/pdfx/invoice-modern/invoice-modern'
 import { theme as professionalTheme, type PdfxTheme } from '@/lib/pdfx-theme'
 import {
   parseProjectFile,
   type BlockNode,
   type ProjectFile,
+  type TemplateId,
   type ThemePreset,
 } from './project-schema'
 import { templateCatalogById } from './template-catalog'
 
-type CompiledInvoiceData = {
+export type CompiledInvoiceData = {
   invoiceNumber: string
   invoiceDate: string
   dueDate: string
@@ -44,14 +42,22 @@ type CompiledInvoiceData = {
   notes?: string
 }
 
-export type CompiledProject = {
+export type CompiledProjectBase = {
   project: ProjectFile
   template: (typeof templateCatalogById)[ProjectFile['templateId']]
   theme: PdfxTheme
   data: CompiledInvoiceData
-  document: ReactElement
   visibleBlocks: BlockNode[]
 }
+
+export type CompiledProject = CompiledProjectBase & {
+  document: ReactElement
+}
+
+type DocumentRenderer = (input: {
+  theme: PdfxTheme
+  data: CompiledInvoiceData
+}) => ReactElement
 
 function cloneTheme(theme: PdfxTheme): PdfxTheme {
   return {
@@ -183,20 +189,26 @@ function compileInvoiceData(project: ProjectFile): CompiledInvoiceData {
   }
 }
 
-function renderDocument(project: ProjectFile, theme: PdfxTheme, data: CompiledInvoiceData) {
-  switch (project.templateId) {
-    case 'invoice-classic':
-      return <InvoiceClassicDocument theme={theme} data={data} />
-    case 'invoice-modern':
-      return <InvoiceModernDocument theme={theme} data={data} />
-    case 'invoice-minimal':
-      return <InvoiceMinimalDocument theme={theme} data={data} />
+async function getDocumentRenderer(templateId: TemplateId): Promise<DocumentRenderer> {
+  switch (templateId) {
+    case 'invoice-classic': {
+      const module = await import('@/blocks/pdfx/invoice-classic/invoice-classic')
+      return ({ theme, data }) => <module.InvoiceClassicDocument theme={theme} data={data} />
+    }
+    case 'invoice-modern': {
+      const module = await import('@/blocks/pdfx/invoice-modern/invoice-modern')
+      return ({ theme, data }) => <module.InvoiceModernDocument theme={theme} data={data} />
+    }
+    case 'invoice-minimal': {
+      const module = await import('@/blocks/pdfx/invoice-minimal/invoice-minimal')
+      return ({ theme, data }) => <module.InvoiceMinimalDocument theme={theme} data={data} />
+    }
     default:
-      throw new Error(`Unsupported template: ${project.templateId satisfies never}`)
+      throw new Error(`Unsupported template: ${templateId satisfies never}`)
   }
 }
 
-export function compileProject(input: ProjectFile): CompiledProject {
+export function compileProjectBase(input: ProjectFile): CompiledProjectBase {
   const project = parseProjectFile(input)
   const data = compileInvoiceData(project)
   const theme = createThemeFromPreset(project.themePreset)
@@ -206,8 +218,20 @@ export function compileProject(input: ProjectFile): CompiledProject {
     template: templateCatalogById[project.templateId],
     theme,
     data,
-    document: renderDocument(project, theme, data),
     visibleBlocks: project.blocks.filter((block) => !block.hidden),
+  }
+}
+
+export async function compileProject(input: ProjectFile): Promise<CompiledProject> {
+  const base = compileProjectBase(input)
+  const renderDocument = await getDocumentRenderer(base.project.templateId)
+
+  return {
+    ...base,
+    document: renderDocument({
+      theme: base.theme,
+      data: base.data,
+    }),
   }
 }
 
