@@ -20,7 +20,7 @@ export function StudioPreviewPage() {
   const [importError, setImportError] = useState<string | null>(null)
 
   return (
-    <StudioFrame title="Preview" actionSlot={<Link to="/studio/editor"><Button asChild size="sm" variant="primary"><span>Open editor</span></Button></Link>}>
+    <StudioFrame title="Preview">
       <SplitPane
         left={
           <div className="space-y-4">

@@ -9,6 +9,24 @@
 
 @font-face {
   font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-SemiBold.woff2")
+    format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist";
   src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-sans/Geist-Bold.woff2")
     format("woff2");
   font-weight: 700;
@@ -135,6 +153,35 @@
   --warning-subtle: #2f250f;
 
   color-scheme: dark;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --background: #101410;
+    --background-alt: #e7ede4;
+    --surface: #171c17;
+    --surface-alt: #202720;
+    --surface-strong: #2a332b;
+    --surface-muted: #2b332b;
+    --foreground: #e7ede4;
+    --foreground-muted: #9aa79b;
+    --foreground-subtle: #7e897f;
+    --foreground-inverse: #101410;
+    --border: #e7ede4;
+    --border-subtle: #374038;
+    --shadow-color: #7cb87c;
+    --shadow-accent: #7cb87c;
+    --accent: #7cb87c;
+    --accent-hover: #91c991;
+    --accent-light: #b8ddb8;
+    --destructive: #f87171;
+    --destructive-subtle: #2d1618;
+    --success: #4ade80;
+    --success-subtle: #14291a;
+    --warning: #fbbf24;
+    --warning-subtle: #2f250f;
+    color-scheme: dark;
+  }
 }
 
 @theme inline {

@@ -1,4 +1,5 @@
 import { Button } from '@ds/components/Button'
+import { BlockLibraryPanel } from '@/components/studio/BlockLibraryPanel'
 import { TemplateTile } from '@/components/studio/TemplateTile'
 import { InspectorPanel } from '@/components/studio/InspectorPanel'
 import { LazyPDFPreviewSurface } from '@/components/studio/LazyPDFPreviewSurface'
@@ -8,8 +9,17 @@ import { useCompiledProject } from '@/hooks/useCompiledProject'
 import { useProjectStore } from '@/lib/project-store'
 
 export function StudioEditorPage() {
-  const { project, templates, selectTemplate, selectedBlock, selectedBlockId, setSelectedBlockId, updateBlock, duplicateBlock, removeBlock, reorderBlocks } = useProjectStore()
+  const { project, templates, selectTemplate, selectedBlock, selectedBlockId, setSelectedBlockId, updateBlock, insertBlock, removeBlock, reorderBlocks, toggleBlockHidden } = useProjectStore()
   const { compiledProject, loading, error } = useCompiledProject(project)
+
+  const getInsertionIndex = () => {
+    if (!selectedBlockId) {
+      return project.blocks.length
+    }
+
+    const selectedIndex = project.blocks.findIndex((block) => block.id === selectedBlockId)
+    return selectedIndex >= 0 ? selectedIndex + 1 : project.blocks.length
+  }
 
   return (
     <StudioFrame title="Editor">
@@ -18,6 +28,13 @@ export function StudioEditorPage() {
           {templates.map((template) => (
             <TemplateTile key={template.id} template={template} active={project.templateId === template.id} onSelect={() => selectTemplate(template.id)} ctaLabel="Load" />
           ))}
+          <BlockLibraryPanel
+            templateId={project.templateId}
+            blocks={project.blocks}
+            selectedBlockId={selectedBlockId}
+            onSelectBlock={setSelectedBlockId}
+            onInsertBlock={(blockType) => insertBlock(blockType, getInsertionIndex())}
+          />
         </div>
         <div className="space-y-4">
           {error ? (
@@ -31,9 +48,9 @@ export function StudioEditorPage() {
               {loading ? 'Compiling preview document for the selected template.' : 'Preparing preview document.'}
             </div>
           )}
-          <TimelineTrack blocks={project.blocks} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} onMoveBlock={(blockId, delta) => { const currentIndex = project.blocks.findIndex((block) => block.id === blockId); if (currentIndex >= 0) reorderBlocks(blockId, currentIndex + delta) }} />
+          <TimelineTrack blocks={project.blocks} selectedBlockId={selectedBlockId} onSelectBlock={setSelectedBlockId} onMoveBlock={(blockId, delta) => { const currentIndex = project.blocks.findIndex((block) => block.id === blockId); if (currentIndex >= 0) reorderBlocks(blockId, currentIndex + delta) }} onToggleHidden={toggleBlockHidden} />
         </div>
-        <InspectorPanel block={selectedBlock} onUpdateBlock={(updater) => { if (selectedBlockId) updateBlock(selectedBlockId, updater) }} onDuplicateBlock={() => { if (selectedBlockId) duplicateBlock(selectedBlockId) }} onRemoveBlock={() => { if (selectedBlockId) removeBlock(selectedBlockId) }} />
+        <InspectorPanel block={selectedBlock} onUpdateBlock={(updater) => { if (selectedBlockId) updateBlock(selectedBlockId, updater) }} onToggleHidden={() => { if (selectedBlockId) toggleBlockHidden(selectedBlockId) }} onRemoveBlock={() => { if (selectedBlockId) removeBlock(selectedBlockId) }} />
       </div>
       <div className="mt-4 flex justify-end">
         <Button variant="outline" onClick={() => setSelectedBlockId(project.blocks[0]?.id ?? null)}>Focus first block</Button>
