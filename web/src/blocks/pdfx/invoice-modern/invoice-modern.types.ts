@@ -28,4 +28,17 @@ export interface InvoiceModernData {
     gst: string;
   };
   notes?: string;
+  footer: {
+    leftText: string;
+    rightText: string;
+  };
+  visibility: {
+    "invoice-header": boolean;
+    "invoice-billing": boolean;
+    "invoice-payment": boolean;
+    "invoice-items": boolean;
+    "invoice-totals": boolean;
+    "invoice-notes": boolean;
+    "invoice-footer": boolean;
+  };
 }

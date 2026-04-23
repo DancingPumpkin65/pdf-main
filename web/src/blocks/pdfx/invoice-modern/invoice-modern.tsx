@@ -40,6 +40,19 @@ const sampleData: InvoiceModernData = {
     gst: 'GSTIN 123456789',
   },
   notes: 'Payment terms: Net 30 days. Thank you for your business!',
+  footer: {
+    leftText: 'Frameforge · hello@frameforge.studio',
+    rightText: 'Page 1 of 1',
+  },
+  visibility: {
+    'invoice-header': true,
+    'invoice-billing': true,
+    'invoice-payment': true,
+    'invoice-items': true,
+    'invoice-totals': true,
+    'invoice-notes': true,
+    'invoice-footer': true,
+  },
 };
 
 export function InvoiceModernDocument({
@@ -58,6 +71,13 @@ export function InvoiceModernDocument({
 
 function InvoiceModernContent({ data }: { data: InvoiceModernData }) {
   const theme = usePdfxTheme();
+  const showHeader = data.visibility['invoice-header'];
+  const showBilling = data.visibility['invoice-billing'];
+  const showPayment = data.visibility['invoice-payment'];
+  const showItems = data.visibility['invoice-items'];
+  const showTotals = data.visibility['invoice-totals'];
+  const showNotes = data.visibility['invoice-notes'] && Boolean(data.notes);
+  const showFooter = data.visibility['invoice-footer'];
 
   const styles = StyleSheet.create({
     page: {
@@ -95,107 +115,138 @@ function InvoiceModernContent({ data }: { data: InvoiceModernData }) {
   return (
     <Document title={`Invoice ${data.invoiceNumber}`}>
       <Page size="A4" style={styles.page}>
-        <PageHeader
-          variant="branded"
-          title={data.companyName}
-          subtitle={`${data.subtitle}  ·  ${data.companyAddress}  ·  ${data.companyEmail}`}
-        />
-        <View style={styles.metaRow}>
-          <View style={styles.metaCol}>
-            <Text style={styles.metaLabel} noMargin>
-              Invoice Number
-            </Text>
-            <Text style={{ ...styles.metaValue, fontWeight: 'bold', fontSize: 11 }} noMargin>
-              {data.invoiceNumber}
-            </Text>
+        {showHeader ? (
+          <PageHeader
+            variant="branded"
+            title={data.companyName}
+            subtitle={`${data.subtitle}  ·  ${data.companyAddress}  ·  ${data.companyEmail}`}
+          />
+        ) : null}
+        {showBilling ? (
+          <View style={styles.metaRow}>
+            <View style={styles.metaCol}>
+              <Text style={styles.metaLabel} noMargin>
+                Invoice Number
+              </Text>
+              <Text style={{ ...styles.metaValue, fontWeight: 'bold', fontSize: 11 }} noMargin>
+                {data.invoiceNumber}
+              </Text>
+            </View>
+            <View style={styles.metaCol}>
+              <Text style={styles.metaLabel} noMargin>
+                Invoice Date
+              </Text>
+              <Text style={styles.metaValue} noMargin>
+                {data.invoiceDate}
+              </Text>
+            </View>
+            <View style={styles.metaCol}>
+              <Text style={styles.metaLabel} noMargin>
+                Due Date
+              </Text>
+              <Text style={styles.metaValue} noMargin>
+                {data.dueDate}
+              </Text>
+            </View>
+            <View style={styles.dividerCol} />
+            <View style={{ flex: 2 }}>
+              <Text style={styles.metaLabel} noMargin>
+                Billed To
+              </Text>
+              <Text style={{ ...styles.metaValue, fontWeight: 'bold' }} noMargin>
+                {data.billTo.name}
+              </Text>
+              <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
+                {data.billTo.address}
+              </Text>
+              <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
+                {data.billTo.email}
+              </Text>
+              <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
+                {data.billTo.phone}
+              </Text>
+            </View>
           </View>
-          <View style={styles.metaCol}>
-            <Text style={styles.metaLabel} noMargin>
-              Invoice Date
-            </Text>
-            <Text style={styles.metaValue} noMargin>
-              {data.invoiceDate}
-            </Text>
-          </View>
-          <View style={styles.metaCol}>
-            <Text style={styles.metaLabel} noMargin>
-              Due Date
-            </Text>
-            <Text style={styles.metaValue} noMargin>
-              {data.dueDate}
-            </Text>
-          </View>
-          <View style={styles.dividerCol} />
-          <View style={{ flex: 2 }}>
-            <Text style={styles.metaLabel} noMargin>
-              Billed To
-            </Text>
-            <Text style={{ ...styles.metaValue, fontWeight: 'bold' }} noMargin>
-              {data.billTo.name}
-            </Text>
-            <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
-              {data.billTo.address}
-            </Text>
-            <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
-              {data.billTo.email}
-            </Text>
-            <Text style={{ ...styles.metaValue, color: theme.colors.mutedForeground }} noMargin>
-              {data.billTo.phone}
-            </Text>
-          </View>
-        </View>
-        <Table variant="primary-header">
-          <TableHeader>
-            <TableRow header>
-              <TableCell>Description</TableCell>
-              <TableCell align="center">Qty</TableCell>
-              <TableCell align="right">Unit Price</TableCell>
-              <TableCell align="right">Amount</TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.items.map((item, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: invoice items have no stable id
-              <TableRow key={index}>
-                <TableCell>{item.description}</TableCell>
-                <TableCell align="center">{`${item.quantity}`}</TableCell>
-                <TableCell align="right">{`$${item.unitPrice.toLocaleString()}`}</TableCell>
-                <TableCell align="right">{`$${(item.quantity * item.unitPrice).toFixed(2)}`}</TableCell>
+        ) : null}
+        {showItems ? (
+          <Table variant="primary-header">
+            <TableHeader>
+              <TableRow header>
+                <TableCell>Description</TableCell>
+                <TableCell align="center">Qty</TableCell>
+                <TableCell align="right">Unit Price</TableCell>
+                <TableCell align="right">Amount</TableCell>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <Section noWrap style={{ flexDirection: 'row', marginTop: 16 }}>
-          <View style={{ flex: 1, paddingRight: 20 }}>
+            </TableHeader>
+            <TableBody>
+              {data.items.map((item, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: invoice items have no stable id
+                <TableRow key={index}>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell align="center">{`${item.quantity}`}</TableCell>
+                  <TableCell align="right">{`$${item.unitPrice.toLocaleString()}`}</TableCell>
+                  <TableCell align="right">{`$${(item.quantity * item.unitPrice).toFixed(2)}`}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : null}
+        {showPayment || showTotals ? (
+          <Section noWrap style={{ flexDirection: 'row', marginTop: 16 }}>
+            {showPayment ? (
+              <View style={{ flex: 1, paddingRight: 20 }}>
+                <Text style={styles.metaLabel} noMargin>
+                  Payment Method
+                </Text>
+                <Text variant="xs" noMargin>
+                  {data.paymentTerms.method}
+                </Text>
+                <Text variant="xs" noMargin color="mutedForeground">
+                  {data.paymentTerms.gst}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            {showTotals ? (
+              <View style={{ width: 220 }}>
+                <KeyValue
+                  size="sm"
+                  dividerThickness={1}
+                  items={[
+                    { key: 'Subtotal', value: `$${data.summary.subtotal.toFixed(2)}` },
+                    { key: 'Tax (7%)', value: `$${data.summary.tax.toFixed(2)}` },
+                    {
+                      key: 'Total Due',
+                      value: `$${data.summary.total.toFixed(2)}`,
+                      valueStyle: { fontSize: 12, fontWeight: 'bold' },
+                      keyStyle: { fontSize: 12, fontWeight: 'bold' },
+                    },
+                  ]}
+                  divided
+                />
+              </View>
+            ) : null}
+          </Section>
+        ) : null}
+        {showNotes ? (
+          <Section style={{ marginTop: 16 }}>
             <Text style={styles.metaLabel} noMargin>
-              Payment Method
+              Notes
             </Text>
             <Text variant="xs" noMargin>
-              {data.paymentTerms.method}
+              {data.notes}
             </Text>
-            <Text variant="xs" noMargin color="mutedForeground">
-              {data.paymentTerms.gst}
-            </Text>
-          </View>
-          <View style={{ width: 220 }}>
-            <KeyValue
-              size="sm"
-              dividerThickness={1}
-              items={[
-                { key: 'Subtotal', value: `$${data.summary.subtotal.toFixed(2)}` },
-                { key: 'Tax (7%)', value: `$${data.summary.tax.toFixed(2)}` },
-                {
-                  key: 'Total Due',
-                  value: `$${data.summary.total.toFixed(2)}`,
-                  valueStyle: { fontSize: 12, fontWeight: 'bold' },
-                  keyStyle: { fontSize: 12, fontWeight: 'bold' },
-                },
-              ]}
-              divided
-            />
-          </View>
-        </Section>
-        <PageFooter leftText={data.notes} rightText="Page 1 of 1" sticky pagePadding={25} />
+          </Section>
+        ) : null}
+        {showFooter ? (
+          <PageFooter
+            leftText={data.footer.leftText}
+            rightText={data.footer.rightText}
+            sticky
+            pagePadding={25}
+          />
+        ) : null}
       </Page>
     </Document>
   );
