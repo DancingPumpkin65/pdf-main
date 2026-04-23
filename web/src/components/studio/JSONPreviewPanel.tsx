@@ -42,7 +42,7 @@ export function JSONPreviewPanel({
             </span>
           </button>
         ))}
-        <pre className="overflow-x-auto whitespace-pre-wrap text-[11px] text-[var(--foreground-inverse)]/78">
+        <pre className="overflow-x-auto whitespace-pre text-[11px] text-[var(--foreground-inverse)]/78">
           {JSON.stringify(project, null, 2)}
         </pre>
       </div>
