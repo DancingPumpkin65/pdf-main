@@ -4,7 +4,7 @@ import { Button } from '@ds/components/Button'
 import { Card, CardContent, CardHeader, CardTitle } from '@ds/components/Card'
 import { Input } from '@ds/components/Input'
 import { JSONPreviewPanel } from '@/components/studio/JSONPreviewPanel'
-import { PDFPreviewSurface } from '@/components/studio/PDFPreviewSurface'
+import { LazyPDFPreviewSurface } from '@/components/studio/LazyPDFPreviewSurface'
 import { SplitPane } from '@/components/studio/SplitPane'
 import { StudioFrame } from '@/components/studio/StudioFrame'
 import { Textarea } from '@/components/studio/Textarea'
@@ -65,7 +65,7 @@ export function StudioPreviewPage() {
               <CardContent className="pt-6 text-sm leading-6 text-[var(--destructive)]">{error}</CardContent>
             </Card>
           ) : deferredDocument ? (
-            <PDFPreviewSurface document={deferredDocument} title={project.metadata.name} description="Editing the project model updates the compiled PDF document rendered from the local PDFx blocks." />
+            <LazyPDFPreviewSurface document={deferredDocument} title={project.metadata.name} description="Editing the project model updates the compiled PDF document rendered from the local PDFx blocks." />
           ) : (
             <Card>
               <CardHeader className="border-b-2 border-[var(--border)] bg-[var(--surface-alt)]">

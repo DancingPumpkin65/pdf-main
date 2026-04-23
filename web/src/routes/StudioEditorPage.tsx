@@ -1,7 +1,7 @@
 import { Button } from '@ds/components/Button'
 import { TemplateTile } from '@/components/studio/TemplateTile'
 import { InspectorPanel } from '@/components/studio/InspectorPanel'
-import { PDFPreviewSurface } from '@/components/studio/PDFPreviewSurface'
+import { LazyPDFPreviewSurface } from '@/components/studio/LazyPDFPreviewSurface'
 import { StudioFrame } from '@/components/studio/StudioFrame'
 import { TimelineTrack } from '@/components/studio/TimelineTrack'
 import { useCompiledProject } from '@/hooks/useCompiledProject'
@@ -25,7 +25,7 @@ export function StudioEditorPage() {
               {error}
             </div>
           ) : compiledProject ? (
-            <PDFPreviewSurface document={compiledProject.document} title={project.metadata.name} description="The editor keeps the preview visible while block order and properties change." />
+            <LazyPDFPreviewSurface document={compiledProject.document} title={project.metadata.name} description="The editor keeps the preview visible while block order and properties change." />
           ) : (
             <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-5 text-sm leading-6 shadow-[8px_8px_0px_0px_var(--shadow-color)]">
               {loading ? 'Compiling preview document for the selected template.' : 'Preparing preview document.'}
