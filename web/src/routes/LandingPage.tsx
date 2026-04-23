@@ -1,158 +1,336 @@
-import { FileJson2, Layers3, PanelTopClose, Sparkles } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Badge } from '@ds/components/Badge'
-import { Button } from '@ds/components/Button'
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@ds/components/Card'
-import { MarketingNavbar } from '@ds/components/MarketingNavbar'
-import { ThemeIconButton } from '@ds/components/ThemeIconButton'
-import { useTheme } from '@ds/theme/ThemeProvider'
-import { TemplateTile } from '@/components/studio/TemplateTile'
-import { ThemeSwatch } from '@/components/studio/ThemeSwatch'
-import { useProjectStore } from '@/lib/project-store'
-import { templateCatalogById, themePresetLabels } from '@/lib/template-catalog'
+import { MarketingFooter } from '@/components/MarketingFooter'
 
-const rails = [
-  { title: 'PDF blocks', copy: 'Installed local source for classic, modern, and minimal invoice templates.', icon: Layers3 },
-  { title: 'Theme tokens', copy: 'Professional, modern, and minimal presets are ready for routed studio flows.', icon: Sparkles },
-  { title: 'Structure export', copy: 'A typed project file now drives template selection, compilation, and editor state.', icon: FileJson2 },
+const lightModeVars = {
+  '--background': '#f0f0e8',
+  '--background-alt': '#1a1a1a',
+  '--surface': '#ffffff',
+  '--surface-alt': '#e8e8e0',
+  '--surface-strong': '#1a1a1a',
+  '--surface-muted': '#d8d8d0',
+  '--foreground': '#1a1a1a',
+  '--foreground-muted': '#888888',
+  '--foreground-subtle': '#aaaaaa',
+  '--foreground-inverse': '#f0f0e8',
+  '--border': '#1a1a1a',
+  '--border-subtle': '#cccccc',
+  '--accent': '#2d5a2d',
+  '--accent-hover': '#3a6a3a',
+  '--accent-light': '#7cb87c',
+  '--shadow-color': '#1a1a1a',
+  '--shadow-accent': 'rgba(45,90,45,1)',
+} as const satisfies Record<`--${string}`, string>
+
+const valueProps = [
+  {
+    id: '01',
+    title: 'LIVE PREVIEW',
+    desc: 'See the PDF update while editing the same project data.',
+  },
+  {
+    id: '02',
+    title: 'PDFX OUTPUT',
+    desc: 'Export the structure that drives the generated document.',
+  },
+  {
+    id: '03',
+    title: 'TEMPLATE FIRST',
+    desc: 'Start from classic, modern, or minimal invoice layouts.',
+  },
+  {
+    id: '04',
+    title: 'EDITOR FLOW',
+    desc: 'Adjust blocks like clips in a simple timeline-style workspace.',
+  },
 ] as const
 
+const steps = [
+  {
+    step: '1',
+    action: 'CHOOSE',
+    desc: 'Pick a template and open the preview.',
+  },
+  {
+    step: '2',
+    action: 'CUSTOMIZE',
+    desc: 'Edit content, reorder blocks, and switch the visual tone.',
+  },
+  {
+    step: '3',
+    action: 'EXPORT',
+    desc: 'Download the project structure and keep the PDF reproducible.',
+  },
+] as const
+
+const comparison = {
+  oldWay: [
+    'Manual PDF changes',
+    'Hard to reuse structure',
+    'Preview and data are disconnected',
+    'No clean export format',
+  ],
+  pdfx: [
+    'Live rendered preview',
+    'Structured project model',
+    'Preview and editor stay in sync',
+    'Exportable PDFx-style JSON',
+  ],
+}
+
 export function LandingPage() {
-  const { theme, toggleTheme } = useTheme()
-  const { project, templates, selectTemplate, setThemePreset, selectedBlock } = useProjectStore()
-  const activeTemplate = templateCatalogById[project.templateId]
-  const visibleBlocks = project.blocks.filter((block) => !block.hidden)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrolled(window.scrollY > 50)
+    }
+
+    handleScroll()
+    window.addEventListener('scroll', handleScroll)
+
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
 
   return (
-    <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
-      <MarketingNavbar
-        brand="PDFX/STUDIO"
-        brandHref="/"
-        items={[{ label: 'Templates', href: '#templates' }, { label: 'Workspace', href: '#workspace' }]}
-        utilitySlot={<ThemeIconButton theme={theme} onToggle={toggleTheme} />}
-        ctaLabel="Open Preview"
-        ctaHref="/studio/preview"
-      />
-      <main id="top" className="px-4 pb-10 pt-28 sm:px-6 sm:pt-32">
-        <section className="mx-auto grid max-w-7xl gap-6 lg:grid-cols-[1.3fr_0.7fr]">
-          <Card className="overflow-hidden">
-            <CardHeader className="gap-6 border-b-2 border-[var(--border)] bg-[var(--surface-alt)]">
-              <div className="flex flex-wrap items-center gap-3">
-                <Badge variant="secondary">Invoice Studio</Badge>
-                <Badge variant="outline">Preview flow</Badge>
-              </div>
-              <div className="space-y-4">
-                <CardTitle className="text-4xl sm:text-6xl">Build branded invoice PDFs from a local PDFx catalog.</CardTitle>
-                <CardDescription className="max-w-2xl text-base leading-7 text-[var(--foreground)]">
-                  Start from a seeded template, tune the theme direction, then move straight into preview or editor mode without leaving the project model.
-                </CardDescription>
-              </div>
-            </CardHeader>
-            <CardContent className="grid gap-4 pt-6 sm:grid-cols-3">
-              <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Template</p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">{activeTemplate.title}</p>
-              </div>
-              <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Theme</p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">{themePresetLabels[project.themePreset]}</p>
-              </div>
-              <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4">
-                <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Output</p>
-                <p className="mt-3 text-lg font-black uppercase tracking-tight">Structured JSON</p>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="bg-[var(--foreground)] text-[var(--foreground-inverse)] shadow-[12px_12px_0px_0px_var(--accent)]">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <Badge variant="success">Catalog</Badge>
-                <PanelTopClose className="h-5 w-5" />
-              </div>
-              <CardTitle className="text-3xl text-[var(--foreground-inverse)]">Three invoice directions loaded.</CardTitle>
-              <CardDescription className="text-[var(--foreground-inverse)]/80">Each template is installed as local source under `src/blocks/pdfx`.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 pt-0">
-              {templates.map((template) => (
-                <div key={template.id} className={`border-2 p-4 ${project.templateId === template.id ? 'border-[var(--accent-light)] bg-[var(--accent)]/25' : 'border-[var(--foreground-inverse)]/70 bg-[var(--foreground-inverse)]/8'}`}>
-                  <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-inverse)]/70">{template.id}</p>
-                  <p className="mt-2 text-lg font-black uppercase tracking-tight">{template.title}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
+    <div
+      id="top"
+      className="min-h-screen font-mono selection:bg-[#2d5a2d] selection:text-[color:#f0f0e8]"
+      style={{ ...(lightModeVars as React.CSSProperties), backgroundColor: 'var(--background)', color: 'var(--foreground)' }}
+    >
+      <nav
+        className={`fixed top-0 z-50 flex w-full items-center justify-between px-6 py-4 transition-all duration-200 ${
+          scrolled
+            ? 'border-b-2 border-[#1a1a1a] bg-[#f0f0e8] text-[color:#1a1a1a]'
+            : 'bg-transparent text-[color:#f0f0e8] drop-shadow-md'
+        }`}
+      >
+        <div className="flex items-center gap-4">
+          <span
+            className={`text-xl font-black tracking-tighter transition-opacity duration-200 ${
+              scrolled ? 'opacity-100' : 'opacity-0'
+            }`}
+          >
+            PDFx.
+          </span>
+        </div>
+        <div className="flex items-center gap-6 text-sm font-bold uppercase tracking-wide">
+          <a href="#workflow" className="hover:underline underline-offset-4">
+            Workflow
+          </a>
+          <a href="#compare" className="hidden hover:underline underline-offset-4 sm:block">
+            Compare
+          </a>
+          <Link to="/studio/editor" className="hover:underline underline-offset-4">
+            Editor
+          </Link>
+          <Link
+            to="/studio/preview"
+            className={`border-2 px-4 py-2 transition-colors ${
+              scrolled
+                ? 'border-[#1a1a1a] !bg-[#f0f0e8] !text-[color:#1a1a1a] !hover:bg-[#1a1a1a] !hover:text-[color:#f0f0e8]'
+                : 'border-[#f0f0e8] !text-[color:#f0f0e8] !hover:bg-[#f0f0e8] !hover:text-[color:#1a1a1a]'
+            }`}
+          >
+            Start
+          </Link>
+        </div>
+      </nav>
 
-        <section id="templates" className="mx-auto mt-8 max-w-7xl">
-          <div className="flex flex-wrap items-end justify-between gap-4">
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">Installed templates</p>
-              <h2 className="mt-2 text-3xl font-black uppercase tracking-tight sm:text-4xl">Start from the invoice block that matches the client tone.</h2>
+      <section
+        className="relative flex min-h-[85vh] flex-col justify-end overflow-x-clip border-b-2 border-[#1a1a1a] bg-cover bg-center bg-no-repeat px-6 pb-32 pt-32 text-[color:#f0f0e8] md:pb-24"
+        style={{
+          backgroundImage:
+            'radial-gradient(circle at 20% 20%, rgba(124,184,124,0.22), transparent 22%), linear-gradient(135deg, rgba(26,26,26,0.82), rgba(45,90,45,0.46)), linear-gradient(135deg, #2a4732 0%, #1d2a20 100%)',
+        }}
+      >
+        <div className="pointer-events-none absolute inset-0 bg-black/10" />
+
+        <div className="relative z-10 mx-auto w-full max-w-7xl">
+          <h1
+            className="ml-[-0.5vw] text-[25vw] font-black leading-[0.75] tracking-tighter sm:text-[22vw]"
+            style={{
+              textShadow: '8px 8px 0 #1a1a1a, 0 20px 40px rgba(0,0,0,0.5)',
+            }}
+          >
+            PDFx
+          </h1>
+
+          <div className="mt-20 flex flex-col gap-12 md:mt-24 lg:flex-row lg:items-end lg:justify-between">
+            <div className="flex max-w-full flex-col items-start gap-4 md:gap-6">
+              <div className="max-w-full origin-bottom-left -rotate-2 border-2 border-[#1a1a1a] bg-[#f0f0e8] px-5 py-3 text-[color:#1a1a1a] shadow-[6px_6px_0px_0px_var(--shadow-color)] md:px-8 md:py-4 md:shadow-[8px_8px_0px_0px_var(--shadow-color)]">
+                <p className="text-2xl font-black uppercase leading-tight tracking-tight sm:text-3xl md:text-4xl md:leading-none">
+                  Live PDF preview for invoice workflows.
+                </p>
+              </div>
+              <div className="bg-[#2d5a2d] text-[color:#f0f0e8] px-5 py-3 md:px-8 md:py-4 border-2 border-[#1a1a1a] shadow-[6px_6px_0px_0px_var(--shadow-color)] md:shadow-[8px_8px_0px_0px_var(--shadow-color)] rotate-1 origin-top-left ml-2 md:ml-8 max-w-full">
+                <p className="text-xl sm:text-2xl md:text-3xl font-black tracking-tight uppercase leading-tight md:leading-none">
+                  Customize blocks. Export structure.
+                </p>
+              </div>
             </div>
-            <Link to="/studio/preview">
-              <Button asChild variant="primary">
-                <span>Open Preview</span>
-              </Button>
-            </Link>
+
+            <div className="mt-4 flex flex-col gap-6 sm:flex-row lg:mt-0 lg:justify-end">
+              <Link
+                to="/studio/preview"
+                className="flex items-center justify-center self-start border-2 border-[#1a1a1a] bg-[#1a1a1a] px-6 py-4 text-lg font-black text-[color:#f0f0e8] transition-colors hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2d5a2d] hover:shadow-[4px_4px_0px_0px_var(--shadow-color)] md:px-8 md:py-5 md:text-xl md:hover:shadow-[6px_6px_0px_0px_var(--shadow-color)] sm:self-auto"
+                style={{ boxShadow: '8px 8px 0 0 var(--shadow-color)' }}
+              >
+                OPEN PREVIEW →
+              </Link>
+              <Link
+                to="/studio/editor"
+                className="flex items-center justify-center self-start border-2 border-[#1a1a1a] bg-[#1a1a1a] px-6 py-4 text-lg font-black text-[color:#f0f0e8] transition-colors hover:translate-x-[2px] hover:translate-y-[2px] hover:bg-[#2d5a2d] hover:shadow-[4px_4px_0px_0px_var(--shadow-color)] md:px-8 md:py-5 md:text-xl md:hover:shadow-[6px_6px_0px_0px_var(--shadow-color)] sm:self-auto"
+                style={{ boxShadow: '8px 8px 0 0 var(--shadow-color)' }}              
+              >
+                OPEN EDITOR →
+              </Link>
+            </div>
           </div>
-          <div className="mt-6 grid gap-6 xl:grid-cols-3">
-            {templates.map((template) => (
-              <TemplateTile key={template.id} template={template} active={project.templateId === template.id} onSelect={() => selectTemplate(template.id)} ctaLabel="Choose Template" />
+        </div>
+      </section>
+
+      <section className="border-b-2 border-[#1a1a1a] bg-[#f0f0e8]">
+        <div className="grid grid-cols-1 divide-y-2 divide-[#1a1a1a] md:grid-cols-2 md:divide-x-2 md:divide-y-0 xl:grid-cols-4">
+          {valueProps.map((item) => (
+            <div
+              key={item.id}
+              className="group flex flex-col p-8 transition-colors hover:bg-[#1a1a1a] hover:text-[color:#f0f0e8] lg:p-12"
+            >
+              <div className="mb-8 text-sm font-black text-[color:#888]">
+                /{item.id}
+              </div>
+              <h3 className="mb-4 text-3xl font-black uppercase leading-none tracking-tighter lg:text-4xl">
+                {item.title}
+              </h3>
+              <p className="mt-auto text-lg font-medium opacity-80">{item.desc}</p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section id="workflow" className="border-b-2 border-[#1a1a1a] bg-[#e8e8e0] px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-7xl">
+          <h2
+            className="landing-section-title mb-16 text-center font-black uppercase tracking-tighter"
+          >
+            HOW IT WORKS.
+          </h2>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-3 lg:gap-12">
+            {steps.map((item) => (
+              <div
+                key={item.step}
+                className="flex flex-col border-2 border-[#1a1a1a] bg-[#f0f0e8] shadow-[12px_12px_0px_0px_var(--shadow-color)] transition-all hover:translate-x-2 hover:-translate-y-2 hover:shadow-[4px_4px_0px_0px_var(--shadow-color)]"
+              >
+                <div className="flex items-end justify-between border-b-2 border-[#1a1a1a] bg-[#1a1a1a] p-6 text-[color:#f0f0e8]">
+                  <span className="text-7xl font-black leading-none">{item.step}</span>
+                  <span className="mb-1 text-xl font-bold tracking-widest text-[color:#888]">STEP</span>
+                </div>
+                <div className="flex flex-grow flex-col p-8">
+                  <h3 className="mb-4 text-3xl font-black uppercase tracking-tighter text-[color:#2d5a2d] md:text-4xl">
+                    {item.action}
+                  </h3>
+                  <p className="text-lg font-medium text-[color:#1a1a1a]">{item.desc}</p>
+                </div>
+              </div>
             ))}
           </div>
-        </section>
+        </div>
+      </section>
 
-        <section id="workspace" className="mx-auto mt-8 max-w-7xl">
-          <div className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-            <Card>
-              <CardHeader className="border-b-2 border-[var(--border)] bg-[var(--surface-alt)]">
-                <Badge variant="warning">Workspace</Badge>
-                <CardTitle className="text-3xl">Shared shell, local PDF source.</CardTitle>
-                <CardDescription className="text-sm leading-6 text-[var(--foreground)]">Product chrome comes from the shared design system while invoice blocks and theme tokens stay editable in the app workspace.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-4 pt-6">
-                <div className="grid gap-2 sm:grid-cols-3">
-                  {activeTemplate.supportedThemePresets.map((preset) => (
-                    <ThemeSwatch key={preset} preset={preset} active={project.themePreset === preset} onClick={() => setThemePreset(preset)} />
-                  ))}
+      <section id="compare" className="border-b-2 border-[#1a1a1a] bg-[#f0f0e8] px-6 py-24 md:py-32">
+        <div className="mx-auto max-w-7xl">
+          <div className="flex flex-col gap-16 lg:flex-row">
+            <div className="lg:w-1/3">
+              <h2
+                className="landing-section-title mb-6 font-black uppercase tracking-tighter"
+              >
+                THE
+                <br />
+                DIFFERENCE.
+              </h2>
+              <p className="max-w-sm text-xl font-medium text-[color:#888]">
+                One side is scattered PDF work. The other keeps preview, editing, and structure in one flow.
+              </p>
+            </div>
+
+            <div className="lg:w-2/3">
+              <div className="grid grid-cols-1 border-2 border-[#1a1a1a] shadow-[12px_12px_0px_0px_var(--shadow-color)] md:grid-cols-2">
+                <div className="border-b-2 border-[#1a1a1a] bg-[#ffffff] p-8 md:border-b-0 md:border-r-2 md:p-12">
+                  <div className="mb-2 text-sm font-bold tracking-widest text-[color:#888]">OLD WAY</div>
+                  <div className="mb-8 text-5xl font-black tracking-tighter">Manual PDF</div>
+
+                  <ul className="space-y-4 text-lg font-medium text-[color:#1a1a1a]">
+                    {comparison.oldWay.map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <span className="font-black text-[color:#dc2626]">×</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
-                  <p className="font-bold uppercase tracking-[0.18em] text-[var(--foreground-muted)]">Project</p>
-                  <p className="mt-3 text-lg font-black uppercase tracking-tight">{project.metadata.name}</p>
-                  <p className="mt-2 leading-6 text-[var(--foreground)]">{project.metadata.description}</p>
+
+                <div className="bg-[#1a1a1a] p-8 text-[color:#f0f0e8] md:p-12">
+                  <div className="mb-2 text-sm font-bold tracking-widest text-[color:#7cb87c]">PDFX STUDIO</div>
+                  <div className="mb-8 text-5xl font-black tracking-tighter text-[color:#7cb87c]">Structured</div>
+
+                  <ul className="space-y-4 text-lg font-medium">
+                    {comparison.pdfx.map((item) => (
+                      <li key={item} className="flex items-start gap-3">
+                        <span className="font-black text-[color:#7cb87c]">✓</span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <div className="border-2 border-[var(--border)] bg-[var(--surface)] p-4 text-sm">
-                  <p className="font-bold uppercase tracking-[0.18em] text-[var(--foreground-muted)]">Current focus</p>
-                  <p className="mt-3 text-lg font-black uppercase tracking-tight">{selectedBlock?.label ?? 'Header'}</p>
-                  <p className="mt-2 leading-6 text-[var(--foreground)]">{visibleBlocks.length} visible blocks currently feed the PDF compiler and the editor timeline.</p>
-                </div>
-              </CardContent>
-            </Card>
-            <div className="grid gap-4 sm:grid-cols-3">
-              {rails.map((rail) => {
-                const Icon = rail.icon
-                return (
-                  <Card key={rail.title} className="h-full">
-                    <CardHeader className="gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center border-2 border-[var(--border)] bg-[var(--surface-alt)]">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <CardTitle className="text-2xl">{rail.title}</CardTitle>
-                      <CardDescription className="text-sm leading-6 text-[var(--foreground)]">{rail.copy}</CardDescription>
-                    </CardHeader>
-                  </Card>
-                )
-              })}
+              </div>
             </div>
           </div>
-        </section>
-      </main>
+        </div>
+      </section>
+
+      <section className="border-b-2 border-[#1a1a1a] bg-[#2d5a2d] px-6 py-32 text-[color:#f0f0e8]">
+        <div className="mx-auto max-w-5xl text-center">
+          <blockquote className="mb-8 text-4xl font-black uppercase leading-tight tracking-tighter md:text-6xl">
+            &quot;Build the PDF visually, keep the structure clean, and stop treating document work like a black box.&quot;
+          </blockquote>
+          <span className="inline-block border-2 border-[#f0f0e8] px-6 py-3 font-bold uppercase tracking-wider">
+            PDFX STUDIO
+          </span>
+        </div>
+      </section>
+
+      <section className="bg-[#f0f0e8] px-6 py-32">
+        <div className="mx-auto flex max-w-4xl flex-col items-center text-center">
+          <h2
+            className="landing-section-title mb-8 font-black uppercase tracking-tighter"
+          >
+            START
+            <br />
+            NOW.
+          </h2>
+          <p className="mb-12 text-2xl font-medium text-[color:#888]">
+            Open the preview or go straight into the editor.
+          </p>
+          <div className="flex flex-col gap-6 sm:flex-row">
+            <Link
+              to="/studio/preview"
+              className="bg-[#1a1a1a] !text-[color:#f0f0e8] px-12 py-6 border-2 border-[#1a1a1a] text-2xl font-black uppercase tracking-wider hover:border-[#2d5a2d] transition-colors shadow-[12px_12px_0px_0px_var(--shadow-accent)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[8px_8px_0px_0px_var(--shadow-accent)]"
+            >
+              OPEN PREVIEW
+            </Link>
+            <Link
+              to="/studio/editor"
+              className="bg-[#1a1a1a] !text-[color:#f0f0e8] px-12 py-6 border-2 border-[#1a1a1a] text-2xl font-black uppercase tracking-wider hover:border-[#2d5a2d] transition-colors shadow-[12px_12px_0px_0px_var(--shadow-accent)] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-[8px_8px_0px_0px_var(--shadow-accent)]"
+            >
+              OPEN EDITOR
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      <MarketingFooter />
     </div>
   )
 }

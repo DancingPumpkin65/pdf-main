@@ -22,7 +22,7 @@ export function TimelineTrack({
           Timeline
         </p>
       </div>
-      <div className="flex gap-3 overflow-x-auto px-4 py-4">
+      <div className="flex min-w-max gap-3 overflow-x-auto px-4 py-4">
         {blocks.map((block, index) => (
           <div
             key={block.id}
