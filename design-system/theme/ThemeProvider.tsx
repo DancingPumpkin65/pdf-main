@@ -5,6 +5,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useSyncExternalStore,
 } from "react";
 
 const THEME_STORAGE_KEY = "ev-theme";
@@ -14,9 +15,15 @@ export type Theme = "light" | "dark";
 type ThemeContextValue = {
   theme: Theme;
   toggleTheme: () => void;
+  mounted: boolean;
 };
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
+const emptySubscribe = () => () => {};
+
+function useMounted() {
+  return useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 
 function getInitialTheme(): Theme {
   if (typeof document === "undefined") {
@@ -40,22 +47,48 @@ function getInitialTheme(): Theme {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => getInitialTheme());
+  const mounted = useMounted();
 
   useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+
     document.documentElement.setAttribute("data-theme", theme);
     localStorage.setItem(THEME_STORAGE_KEY, theme);
-  }, [theme]);
+  }, [mounted, theme]);
 
   const toggleTheme = useCallback(() => {
     setTheme((currentTheme) => (currentTheme === "dark" ? "light" : "dark"));
   }, []);
 
+  useEffect(() => {
+    if (!mounted) {
+      return;
+    }
+
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (
+        (event.metaKey || event.ctrlKey) &&
+        event.shiftKey &&
+        event.key.toLowerCase() === "l"
+      ) {
+        event.preventDefault();
+        toggleTheme();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [mounted, toggleTheme]);
+
   const value = useMemo(
     () => ({
       theme,
       toggleTheme,
+      mounted,
     }),
-    [theme, toggleTheme],
+    [mounted, theme, toggleTheme],
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
