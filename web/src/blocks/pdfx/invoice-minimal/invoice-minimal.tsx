@@ -40,6 +40,19 @@ const sampleData: InvoiceMinimalData = {
     gst: 'GSTIN 123456789',
   },
   notes: 'Invoice for annual enterprise subscription. Please retain for your records.',
+  footer: {
+    leftText: 'Monotone Office · accounts@monotone.office',
+    rightText: 'Page 1 of 1',
+  },
+  visibility: {
+    'invoice-header': true,
+    'invoice-billing': true,
+    'invoice-payment': true,
+    'invoice-items': true,
+    'invoice-totals': true,
+    'invoice-notes': true,
+    'invoice-footer': true,
+  },
 };
 
 export function InvoiceMinimalDocument({
@@ -58,6 +71,13 @@ export function InvoiceMinimalDocument({
 
 function InvoiceMinimalContent({ data }: { data: InvoiceMinimalData }) {
   const theme = usePdfxTheme();
+  const showHeader = data.visibility['invoice-header'];
+  const showBilling = data.visibility['invoice-billing'];
+  const showPayment = data.visibility['invoice-payment'];
+  const showItems = data.visibility['invoice-items'];
+  const showTotals = data.visibility['invoice-totals'];
+  const showNotes = data.visibility['invoice-notes'] && Boolean(data.notes);
+  const showFooter = data.visibility['invoice-footer'];
 
   const styles = StyleSheet.create({
     page: {
@@ -91,136 +111,173 @@ function InvoiceMinimalContent({ data }: { data: InvoiceMinimalData }) {
   return (
     <Document title={`Invoice ${data.invoiceNumber}`}>
       <Page size="A4" style={styles.page}>
-        <Section
-          noWrap
-          style={{
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            marginBottom: theme.spacing.sectionGap,
-          }}
-        >
-          <View style={{ flex: 1 }}>
-            <PageHeader
-              variant="minimal"
-              title={data.companyName}
-              subtitle={`${data.companyAddress}  ·  ${data.companyEmail}`}
-              marginBottom={0}
-            />
-          </View>
-          <View style={styles.invoiceStamp}>
-            <Text
-              style={{
-                fontSize: 7,
-                fontWeight: 'bold',
-                color: theme.colors.primary,
-                textAlign: 'right',
-              }}
-              noMargin
-              transform="uppercase"
-            >
-              Invoice
-            </Text>
-            <Text
-              style={{
-                fontSize: 14,
-                fontWeight: 'bold',
-                color: theme.colors.foreground,
-                textAlign: 'right',
-              }}
-              noMargin
-            >
-              {data.invoiceNumber}
-            </Text>
-            <Text
-              style={{
-                fontSize: 8,
-                color: theme.colors.mutedForeground,
-                textAlign: 'right',
-              }}
-              noMargin
-            >
-              {data.invoiceDate}
-            </Text>
-          </View>
-        </Section>
-        <View style={styles.infoRow}>
-          <View style={{ flex: 1, paddingRight: 20 }}>
-            <Text style={styles.infoLabel} noMargin>
-              Bill To
-            </Text>
-            <Text variant="sm" noMargin>
-              {data.billTo.name}
-            </Text>
-            <Text variant="xs" noMargin color="mutedForeground">
-              {data.billTo.address}
-            </Text>
-            <Text variant="xs" noMargin color="mutedForeground">
-              {data.billTo.email}
-            </Text>
-            <Text variant="xs" noMargin color="mutedForeground">
-              {data.billTo.phone}
-            </Text>
-          </View>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.infoLabel} noMargin>
-              Invoice Details
-            </Text>
-            <KeyValue
-              size="sm"
-              items={[
-                { key: 'Due Date', value: data.dueDate },
-                { key: 'Payment', value: data.paymentTerms.method },
-                { key: 'GST', value: data.paymentTerms.gst },
-              ]}
-            />
-          </View>
-        </View>
-        <Table variant="compact">
-          <TableHeader>
-            <TableRow header>
-              <TableCell>Description</TableCell>
-              <TableCell align="center">Qty</TableCell>
-              <TableCell align="right">Rate</TableCell>
-              <TableCell align="right">Total</TableCell>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {data.items.map((item, index) => (
-              // biome-ignore lint/suspicious/noArrayIndexKey: invoice items have no stable id
-              <TableRow key={index}>
-                <TableCell>{item.description}</TableCell>
-                <TableCell align="center">{`${item.quantity}`}</TableCell>
-                <TableCell align="right">{`$${item.unitPrice.toLocaleString()}`}</TableCell>
-                <TableCell align="right">{`$${(item.quantity * item.unitPrice).toFixed(2)}`}</TableCell>
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-        <Section noWrap style={{ flexDirection: 'row', marginTop: 20 }}>
-          <View style={{ flex: 1 }} />
-          <View style={{ width: 240 }}>
-            <KeyValue
-              size="sm"
-              dividerThickness={1}
-              items={[
-                { key: 'Subtotal', value: `$${data.summary.subtotal.toFixed(2)}` },
-                { key: 'Tax (7%)', value: `$${data.summary.tax.toFixed(2)}` },
-                {
-                  key: 'Balance Due',
-                  value: `$${data.summary.total.toFixed(2)}`,
-                  valueStyle: {
-                    fontSize: 13,
+        {showHeader || showBilling ? (
+          <Section
+            noWrap
+            style={{
+              flexDirection: 'row',
+              alignItems: 'flex-start',
+              marginBottom: theme.spacing.sectionGap,
+            }}
+          >
+            {showHeader ? (
+              <View style={{ flex: 1 }}>
+                <PageHeader
+                  variant="minimal"
+                  title={data.companyName}
+                  subtitle={`${data.companyAddress}  ·  ${data.companyEmail}`}
+                  marginBottom={0}
+                />
+              </View>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            {showBilling ? (
+              <View style={styles.invoiceStamp}>
+                <Text
+                  style={{
+                    fontSize: 7,
                     fontWeight: 'bold',
                     color: theme.colors.primary,
-                  },
-                  keyStyle: { fontSize: 12, fontWeight: 'bold' },
-                },
-              ]}
-              divided
-            />
+                    textAlign: 'right',
+                  }}
+                  noMargin
+                  transform="uppercase"
+                >
+                  Invoice
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 14,
+                    fontWeight: 'bold',
+                    color: theme.colors.foreground,
+                    textAlign: 'right',
+                  }}
+                  noMargin
+                >
+                  {data.invoiceNumber}
+                </Text>
+                <Text
+                  style={{
+                    fontSize: 8,
+                    color: theme.colors.mutedForeground,
+                    textAlign: 'right',
+                  }}
+                  noMargin
+                >
+                  {data.invoiceDate}
+                </Text>
+              </View>
+            ) : null}
+          </Section>
+        ) : null}
+        {showBilling || showPayment ? (
+          <View style={styles.infoRow}>
+            {showBilling ? (
+              <View style={{ flex: 1, paddingRight: 20 }}>
+                <Text style={styles.infoLabel} noMargin>
+                  Bill To
+                </Text>
+                <Text variant="sm" noMargin>
+                  {data.billTo.name}
+                </Text>
+                <Text variant="xs" noMargin color="mutedForeground">
+                  {data.billTo.address}
+                </Text>
+                <Text variant="xs" noMargin color="mutedForeground">
+                  {data.billTo.email}
+                </Text>
+                <Text variant="xs" noMargin color="mutedForeground">
+                  {data.billTo.phone}
+                </Text>
+              </View>
+            ) : (
+              <View style={{ flex: 1 }} />
+            )}
+            {showPayment ? (
+              <View style={{ flex: 1 }}>
+                <Text style={styles.infoLabel} noMargin>
+                  Invoice Details
+                </Text>
+                <KeyValue
+                  size="sm"
+                  items={[
+                    { key: 'Due Date', value: data.dueDate },
+                    { key: 'Payment', value: data.paymentTerms.method },
+                    { key: 'GST', value: data.paymentTerms.gst },
+                  ]}
+                />
+              </View>
+            ) : null}
           </View>
-        </Section>
-        <PageFooter leftText={data.notes} rightText="Page 1 of 1" sticky pagePadding={25} />
+        ) : null}
+        {showItems ? (
+          <Table variant="compact">
+            <TableHeader>
+              <TableRow header>
+                <TableCell>Description</TableCell>
+                <TableCell align="center">Qty</TableCell>
+                <TableCell align="right">Rate</TableCell>
+                <TableCell align="right">Total</TableCell>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.items.map((item, index) => (
+                // biome-ignore lint/suspicious/noArrayIndexKey: invoice items have no stable id
+                <TableRow key={index}>
+                  <TableCell>{item.description}</TableCell>
+                  <TableCell align="center">{`${item.quantity}`}</TableCell>
+                  <TableCell align="right">{`$${item.unitPrice.toLocaleString()}`}</TableCell>
+                  <TableCell align="right">{`$${(item.quantity * item.unitPrice).toFixed(2)}`}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : null}
+        {showTotals ? (
+          <Section noWrap style={{ flexDirection: 'row', marginTop: 20 }}>
+            <View style={{ flex: 1 }} />
+            <View style={{ width: 240 }}>
+              <KeyValue
+                size="sm"
+                dividerThickness={1}
+                items={[
+                  { key: 'Subtotal', value: `$${data.summary.subtotal.toFixed(2)}` },
+                  { key: 'Tax (7%)', value: `$${data.summary.tax.toFixed(2)}` },
+                  {
+                    key: 'Balance Due',
+                    value: `$${data.summary.total.toFixed(2)}`,
+                    valueStyle: {
+                      fontSize: 13,
+                      fontWeight: 'bold',
+                      color: theme.colors.primary,
+                    },
+                    keyStyle: { fontSize: 12, fontWeight: 'bold' },
+                  },
+                ]}
+                divided
+              />
+            </View>
+          </Section>
+        ) : null}
+        {showNotes ? (
+          <Section style={{ marginTop: 16 }}>
+            <Text style={styles.infoLabel} noMargin>
+              Notes
+            </Text>
+            <Text variant="xs" noMargin color="mutedForeground">
+              {data.notes}
+            </Text>
+          </Section>
+        ) : null}
+        {showFooter ? (
+          <PageFooter
+            leftText={data.footer.leftText}
+            rightText={data.footer.rightText}
+            sticky
+            pagePadding={25}
+          />
+        ) : null}
       </Page>
     </Document>
   );
