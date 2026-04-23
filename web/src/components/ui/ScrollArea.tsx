@@ -1,0 +1,44 @@
+import * as React from 'react'
+import * as ScrollAreaPrimitive from '@radix-ui/react-scroll-area'
+import { cn } from '@ds/utils'
+
+export const ScrollArea = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.Root>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.Root>
+>(({ className, children, ...props }, ref) => (
+  <ScrollAreaPrimitive.Root
+    ref={ref}
+    className={cn('relative overflow-hidden', className)}
+    {...props}
+  >
+    <ScrollAreaPrimitive.Viewport className="h-full w-full">
+      {children}
+    </ScrollAreaPrimitive.Viewport>
+    <ScrollBar />
+    <ScrollBar orientation="horizontal" />
+    <ScrollAreaPrimitive.Corner className="bg-[var(--scrollbar-track)]" />
+  </ScrollAreaPrimitive.Root>
+))
+
+ScrollArea.displayName = ScrollAreaPrimitive.Root.displayName
+
+export const ScrollBar = React.forwardRef<
+  React.ElementRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>,
+  React.ComponentPropsWithoutRef<typeof ScrollAreaPrimitive.ScrollAreaScrollbar>
+>(({ className, orientation = 'vertical', ...props }, ref) => (
+  <ScrollAreaPrimitive.ScrollAreaScrollbar
+    ref={ref}
+    orientation={orientation}
+    className={cn(
+      'flex touch-none select-none bg-[var(--scrollbar-track)] transition-colors',
+      orientation === 'vertical' && 'h-full w-2',
+      orientation === 'horizontal' && 'h-2 flex-col',
+      className,
+    )}
+    {...props}
+  >
+    <ScrollAreaPrimitive.ScrollAreaThumb className="relative flex-1 bg-[var(--scrollbar-thumb)] transition-colors hover:bg-[var(--scrollbar-thumb-hover)]" />
+  </ScrollAreaPrimitive.ScrollAreaScrollbar>
+))
+
+ScrollBar.displayName = ScrollAreaPrimitive.ScrollAreaScrollbar.displayName
