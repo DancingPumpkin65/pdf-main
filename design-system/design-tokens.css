@@ -34,7 +34,35 @@
   font-display: block;
 }
 
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Medium.woff2")
+    format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Bold.woff2")
+    format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: block;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://cdn.jsdelivr.net/npm/geist@1.2.0/dist/fonts/geist-mono/GeistMono-Black.woff2")
+    format("woff2");
+  font-weight: 900;
+  font-style: normal;
+  font-display: block;
+}
+
 :root {
+  /* Core palette - warm cream and dark */
   --background: #f0f0e8;
   --background-alt: #1a1a1a;
   --surface: #ffffff;
@@ -42,29 +70,38 @@
   --surface-strong: #1a1a1a;
   --surface-muted: #d8d8d0;
 
+  /* Text */
   --foreground: #1a1a1a;
   --foreground-muted: #888888;
   --foreground-subtle: #aaaaaa;
   --foreground-inverse: #f0f0e8;
 
+  /* Borders */
   --border: #1a1a1a;
-  --border-subtle: #1a1a1a;
+  --border-subtle: #cccccc;
   --shadow-color: #1a1a1a;
-  --shadow-accent: #1a1a1a;
+  --shadow-accent: rgba(45,90,45,1);
 
+  /* Accent - forest green */
   --accent: #2d5a2d;
   --accent-hover: #3a6a3a;
   --accent-light: #7cb87c;
 
+  /* Semantic colors */
   --destructive: #dc2626;
+  --destructive-subtle: #fef2f2;
   --success: #16a34a;
+  --success-subtle: #f0fdf4;
   --warning: #ca8a04;
+  --warning-subtle: #fefce8;
 
+  /* Focus */
   --ring: var(--accent);
   color-scheme: light;
 }
 
 :root[data-theme="dark"] {
+  /* Core palette - deep olive/charcoal */
   --background: #101410;
   --background-alt: #e7ede4;
   --surface: #171c17;
@@ -72,23 +109,31 @@
   --surface-strong: #2a332b;
   --surface-muted: #2b332b;
 
+  /* Text */
   --foreground: #e7ede4;
   --foreground-muted: #9aa79b;
   --foreground-subtle: #7e897f;
   --foreground-inverse: #101410;
 
+  /* Borders */
   --border: #e7ede4;
-  --border-subtle: #e7ede4;
-  --shadow-color: #e7ede4;
-  --shadow-accent: #e7ede4;
+  --border-subtle: #374038;
+  --shadow-color: #7cb87c;
+  --shadow-accent: #7cb87c;
 
+  /* Accent - forest green lifted for dark backgrounds */
   --accent: #7cb87c;
   --accent-hover: #91c991;
   --accent-light: #b8ddb8;
 
+  /* Semantic colors */
   --destructive: #f87171;
+  --destructive-subtle: #2d1618;
   --success: #4ade80;
+  --success-subtle: #14291a;
   --warning: #fbbf24;
+  --warning-subtle: #2f250f;
+
   color-scheme: dark;
 }
 
@@ -100,8 +145,10 @@
   --font-serif: "Instrument Serif", Georgia, serif;
 }
 
-* {
-  border-color: var(--border-subtle);
+@layer base {
+  * {
+    border-color: var(--border-subtle);
+  }
 }
 
 html {
