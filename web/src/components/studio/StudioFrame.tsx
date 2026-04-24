@@ -14,7 +14,7 @@ export function StudioFrame({
   actionSlot?: ReactNode
   children: ReactNode
 }) {
-  const { theme, toggleTheme } = useTheme()
+  const { theme, toggleTheme, mounted } = useTheme()
 
   return (
     <div className="min-h-screen bg-[var(--background)] text-[var(--foreground)]">
@@ -22,13 +22,13 @@ export function StudioFrame({
         brand="PDFX/STUDIO"
         brandHref="/"
         paths={[{ label: 'Studio', href: '/studio/preview' }, { label: title }]}
-        utilitySlot={<ThemeIconButton theme={theme} onToggle={toggleTheme} />}
+        utilitySlot={<ThemeIconButton theme={theme} onToggle={toggleTheme} mounted={mounted} />}
         actionSlot={
           <div className="flex flex-wrap items-center gap-2">
             <NavLink to="/studio/preview">
               {({ isActive }) => (
                 <Button asChild variant={isActive ? 'primary' : 'outline'} size="sm">
-                  <span>Preview</span>
+                  <span>Open Preview</span>
                 </Button>
               )}
             </NavLink>

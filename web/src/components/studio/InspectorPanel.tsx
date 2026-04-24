@@ -2,6 +2,7 @@ import { Badge } from '@ds/components/Badge'
 import { Button } from '@ds/components/Button'
 import { Input } from '@ds/components/Input'
 import type { BlockNode } from '@/lib/project-schema'
+import { isRemovableInvoiceBlockType } from '@/lib/template-catalog'
 import { Textarea } from './Textarea'
 
 function NumberField({
@@ -24,13 +25,13 @@ function NumberField({
 export function InspectorPanel({
   block,
   onUpdateBlock,
-  onDuplicateBlock,
   onRemoveBlock,
+  onToggleHidden,
 }: {
   block: BlockNode | null
   onUpdateBlock: (updater: (block: BlockNode) => BlockNode) => void
-  onDuplicateBlock: () => void
   onRemoveBlock: () => void
+  onToggleHidden: () => void
 }) {
   if (!block) {
     return (
@@ -52,7 +53,12 @@ export function InspectorPanel({
           </p>
           <p className="mt-2 text-xl font-black uppercase tracking-tight">{block.label}</p>
         </div>
-        <Badge variant="outline">{block.type}</Badge>
+        <div className="flex items-center gap-2">
+          <Badge variant={block.hidden ? 'warning' : 'success'}>
+            {block.hidden ? 'Hidden' : 'Visible'}
+          </Badge>
+          <Badge variant="outline">{block.type}</Badge>
+        </div>
       </div>
 
       {block.type === 'invoice-header' ? (
@@ -112,13 +118,18 @@ export function InspectorPanel({
       ) : null}
 
       <div className="flex gap-2 border-t-2 border-[var(--border)] pt-4">
-        <Button variant="outline" size="sm" onClick={onDuplicateBlock}>
-          Duplicate
+        <Button variant="outline" size="sm" onClick={onToggleHidden}>
+          {block.hidden ? 'Show section' : 'Hide section'}
         </Button>
-        <Button variant="destructive" size="sm" onClick={onRemoveBlock}>
+        <Button variant="destructive" size="sm" onClick={onRemoveBlock} disabled={!isRemovableInvoiceBlockType(block.type)}>
           Remove
         </Button>
       </div>
+      {!isRemovableInvoiceBlockType(block.type) ? (
+        <p className="text-xs leading-5 text-[var(--foreground-muted)]">
+          Core invoice sections stay in the project structure. Hide them when you need them out of the PDF.
+        </p>
+      ) : null}
     </div>
   )
 }
