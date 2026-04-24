@@ -39,7 +39,22 @@ export function InspectorPanel({
         <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
           Inspector
         </p>
-        <p className="mt-4 text-sm leading-6">Select a block to inspect and edit its content.</p>
+        <p className="mt-4 text-base font-black uppercase tracking-[0.16em]">
+          No section armed
+        </p>
+        <p className="mt-3 text-sm leading-6">
+          Select a section from the live PDF controls to inspect and edit its content.
+        </p>
+        <div className="mt-4 border-2 border-[var(--border)] bg-[var(--surface-alt)] p-4">
+          <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-[var(--foreground-muted)]">
+            Quick start
+          </p>
+          <ol className="mt-3 space-y-2 text-sm leading-6">
+            <li>1. Pick a section from the live PDF card.</li>
+            <li>2. Change its fields here.</li>
+            <li>3. Toggle visibility when you want it out of the final PDF.</li>
+          </ol>
+        </div>
       </div>
     )
   }

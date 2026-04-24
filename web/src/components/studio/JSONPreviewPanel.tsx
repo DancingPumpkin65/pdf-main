@@ -36,9 +36,19 @@ export function JSONPreviewPanel({
                 : 'border-[var(--foreground-inverse)]/15 bg-transparent hover:border-[var(--foreground-inverse)]/45',
             )}
           >
-            <span className="font-bold uppercase tracking-[0.16em]">{block.label}</span>
-            <span className="text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-inverse)]/60">
-              {block.type}
+            <span>
+              <span className="font-bold uppercase tracking-[0.16em]">{block.label}</span>
+              <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-inverse)]/50">
+                {block.id}
+              </span>
+            </span>
+            <span className="text-right">
+              <span className="block text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-inverse)]/60">
+                {block.type}
+              </span>
+              <span className="mt-1 block text-[10px] uppercase tracking-[0.16em] text-[var(--foreground-inverse)]/50">
+                {block.hidden ? 'Hidden' : 'Live'}
+              </span>
             </span>
           </button>
         ))}

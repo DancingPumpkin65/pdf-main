@@ -1,7 +1,7 @@
 import { Badge } from '@ds/components/Badge'
 import { Button } from '@ds/components/Button'
 import { cn } from '@ds/utils'
-import type { BlockNode, InvoiceBlockType, TemplateId } from '@/lib/project-schema'
+import type { BlockNode, InvoiceBlockType } from '@/lib/project-schema'
 import { invoiceBlockLibrary } from '@/lib/template-catalog'
 
 function getBlockStatus(block: BlockNode | undefined) {
@@ -29,13 +29,11 @@ function getBlockStatus(block: BlockNode | undefined) {
 }
 
 export function BlockLibraryPanel({
-  templateId,
   blocks,
   selectedBlockId,
   onInsertBlock,
   onSelectBlock,
 }: {
-  templateId: TemplateId
   blocks: BlockNode[]
   selectedBlockId: string | null
   onInsertBlock: (blockType: InvoiceBlockType) => void
@@ -46,9 +44,6 @@ export function BlockLibraryPanel({
       <div className="border-b-2 border-[var(--border)] bg-[var(--surface-alt)] px-4 py-3">
         <p className="text-xs font-bold uppercase tracking-[0.24em] text-[var(--foreground-muted)]">
           Section library
-        </p>
-        <p className="mt-1 text-sm leading-6 text-[var(--foreground)]">
-          Reinsert or reveal the template sections for <span className="font-bold uppercase">{templateId}</span>.
         </p>
       </div>
       <div className="space-y-3 p-4">

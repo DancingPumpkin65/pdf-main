@@ -15,7 +15,7 @@ export function SplitPane({
   return (
     <div
       className={cn(
-        'grid gap-4 xl:grid-cols-[20rem_minmax(0,1fr)_22rem] xl:items-start',
+        'grid gap-4 xl:grid-cols-[18rem_minmax(0,1fr)_20rem] xl:items-start',
         className,
       )}
     >

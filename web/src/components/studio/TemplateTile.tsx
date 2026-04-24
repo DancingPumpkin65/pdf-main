@@ -21,7 +21,7 @@ export function TemplateTile({
   ctaLabel?: string
 }) {
   return (
-    <Card className="flex h-full flex-col">
+    <Card className="flex flex-col">
       <CardHeader className="border-b-2 border-[var(--border)]">
         <div className="flex items-center justify-between gap-3">
           <Badge variant="outline">{template.label}</Badge>
