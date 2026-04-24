@@ -13,12 +13,13 @@ import {
   safeParseProjectFile,
   serializeProjectFile,
   type BlockNode,
+  type InvoiceBlockType,
   type ProjectFile,
   type ProjectMetadata,
   type TemplateId,
   type ThemePreset,
 } from './project-schema'
-import { createDefaultProject, templateCatalog } from './template-catalog'
+import { createDefaultProject, createTemplateBlock, templateCatalog } from './template-catalog'
 
 const STORAGE_KEY = 'pdfx-studio.project'
 
@@ -33,9 +34,11 @@ type ProjectContextValue = {
   updateProject: (updater: ProjectFile | ((current: ProjectFile) => ProjectFile)) => void
   updateMetadata: (metadata: Partial<ProjectMetadata>) => void
   updateBlock: (blockId: string, updater: (block: BlockNode) => BlockNode) => void
+  insertBlock: (blockType: InvoiceBlockType, targetIndex?: number) => string | null
   reorderBlocks: (blockId: string, targetIndex: number) => void
   duplicateBlock: (blockId: string) => void
   removeBlock: (blockId: string) => void
+  toggleBlockHidden: (blockId: string) => void
   resetProject: (templateId?: TemplateId) => void
   importProjectJson: (json: string) => { ok: true } | { ok: false; error: string }
   exportProjectJson: () => string
@@ -87,6 +90,10 @@ function cloneBlock(block: BlockNode, nextId: string): BlockNode {
 
 function createBlockId(blockId: string) {
   return `${blockId}-copy-${Date.now()}`
+}
+
+function clampIndex(targetIndex: number, length: number) {
+  return Math.max(0, Math.min(targetIndex, length))
 }
 
 export function ProjectStoreProvider({ children }: { children: ReactNode }) {
@@ -151,6 +158,47 @@ export function ProjectStoreProvider({ children }: { children: ReactNode }) {
           blocks: current.blocks.map((block) => (block.id === blockId ? updater(block) : block)),
         }))
       },
+      insertBlock: (blockType, targetIndex = project.blocks.length) => {
+        let nextSelectedBlockId: string | null = null
+
+        setProject((current) => {
+          const existingIndex = current.blocks.findIndex((block) => block.type === blockType)
+          const nextBlocks = [...current.blocks]
+
+          if (existingIndex >= 0) {
+            const [existingBlock] = nextBlocks.splice(existingIndex, 1)
+            const destinationIndex = clampIndex(targetIndex, nextBlocks.length)
+            const restoredBlock = {
+              ...existingBlock,
+              hidden: false,
+            }
+
+            nextBlocks.splice(destinationIndex, 0, restoredBlock)
+            nextSelectedBlockId = restoredBlock.id
+
+            return touchProject({
+              ...current,
+              blocks: nextBlocks,
+            })
+          }
+
+          const insertedBlock = createTemplateBlock(current.templateId, blockType)
+          const destinationIndex = clampIndex(targetIndex, nextBlocks.length)
+          nextBlocks.splice(destinationIndex, 0, insertedBlock)
+          nextSelectedBlockId = insertedBlock.id
+
+          return touchProject(parseProjectFile({
+            ...current,
+            blocks: nextBlocks,
+          }))
+        })
+
+        if (nextSelectedBlockId) {
+          setSelectedBlockId(nextSelectedBlockId)
+        }
+
+        return nextSelectedBlockId
+      },
       reorderBlocks: (blockId, targetIndex) => {
         updateProject((current) => {
           const sourceIndex = current.blocks.findIndex((block) => block.id === blockId)
@@ -190,6 +238,19 @@ export function ProjectStoreProvider({ children }: { children: ReactNode }) {
         updateProject((current) => ({
           ...current,
           blocks: current.blocks.filter((block) => block.id !== blockId),
+        }))
+      },
+      toggleBlockHidden: (blockId) => {
+        updateProject((current) => ({
+          ...current,
+          blocks: current.blocks.map((block) =>
+            block.id === blockId
+              ? {
+                  ...block,
+                  hidden: !block.hidden,
+                }
+              : block,
+          ),
         }))
       },
       resetProject: (templateId) => {

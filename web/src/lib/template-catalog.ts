@@ -1,4 +1,56 @@
-import type { ProjectFile, TemplateId, ThemePreset } from './project-schema'
+import type { BlockNode, InvoiceBlockType, ProjectFile, TemplateId, ThemePreset } from './project-schema'
+
+export const invoiceBlockOrder: InvoiceBlockType[] = [
+  'invoice-header',
+  'invoice-billing',
+  'invoice-payment',
+  'invoice-items',
+  'invoice-totals',
+  'invoice-notes',
+  'invoice-footer',
+]
+
+export const invoiceBlockLibrary: Array<{
+  type: InvoiceBlockType
+  title: string
+  description: string
+}> = [
+  {
+    type: 'invoice-header',
+    title: 'Header',
+    description: 'Brand, sender details, and invoice heading.',
+  },
+  {
+    type: 'invoice-billing',
+    title: 'Billing',
+    description: 'Invoice number, dates, and client details.',
+  },
+  {
+    type: 'invoice-payment',
+    title: 'Payment',
+    description: 'Payment method, due date, and tax registration.',
+  },
+  {
+    type: 'invoice-items',
+    title: 'Items',
+    description: 'The billed line items and quantities.',
+  },
+  {
+    type: 'invoice-totals',
+    title: 'Totals',
+    description: 'Subtotal, tax, and final balance due.',
+  },
+  {
+    type: 'invoice-notes',
+    title: 'Notes',
+    description: 'A short project note or payment context.',
+  },
+  {
+    type: 'invoice-footer',
+    title: 'Footer',
+    description: 'Persistent footer copy and page label.',
+  },
+]
 
 const defaultThemeByTemplate: Record<TemplateId, ThemePreset> = {
   'invoice-classic': 'professional',
@@ -326,4 +378,17 @@ export const themePresetLabels: Record<ThemePreset, string> = {
   professional: 'Professional',
   modern: 'Modern',
   minimal: 'Minimal',
+}
+
+export function isRemovableInvoiceBlockType(type: InvoiceBlockType) {
+  return type === 'invoice-notes' || type === 'invoice-footer'
+}
+
+export function createTemplateBlock(templateId: TemplateId, blockType: InvoiceBlockType): BlockNode {
+  const block = createDefaultProject(templateId).blocks.find((entry) => entry.type === blockType)
+  if (!block) {
+    throw new Error(`Unsupported block type for template ${templateId}: ${blockType}`)
+  }
+
+  return JSON.parse(JSON.stringify(block)) as BlockNode
 }

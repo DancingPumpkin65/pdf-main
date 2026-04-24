@@ -3,6 +3,7 @@ import { theme as professionalTheme, type PdfxTheme } from '@/lib/pdfx-theme'
 import {
   parseProjectFile,
   type BlockNode,
+  type InvoiceBlockType,
   type ProjectFile,
   type TemplateId,
   type ThemePreset,
@@ -40,6 +41,11 @@ export type CompiledInvoiceData = {
     gst: string
   }
   notes?: string
+  footer: {
+    leftText: string
+    rightText: string
+  }
+  visibility: Record<InvoiceBlockType, boolean>
 }
 
 export type CompiledProjectBase = {
@@ -159,6 +165,10 @@ function compileInvoiceData(project: ProjectFile): CompiledInvoiceData {
     BlockNode,
     { type: 'invoice-notes' }
   > | null
+  const footer = findBlock(project, 'invoice-footer') as Extract<
+    BlockNode,
+    { type: 'invoice-footer' }
+  > | null
 
   return {
     invoiceNumber: billing.props.invoiceNumber,
@@ -186,6 +196,19 @@ function compileInvoiceData(project: ProjectFile): CompiledInvoiceData {
       gst: payment.props.gst,
     },
     notes: notes?.props.content || undefined,
+    footer: {
+      leftText: footer?.props.leftText ?? '',
+      rightText: footer?.props.rightText ?? 'Page 1 of 1',
+    },
+    visibility: {
+      'invoice-header': !header.hidden,
+      'invoice-billing': !billing.hidden,
+      'invoice-payment': !payment.hidden,
+      'invoice-items': !items.hidden,
+      'invoice-totals': !totals.hidden,
+      'invoice-notes': notes ? !notes.hidden : false,
+      'invoice-footer': footer ? !footer.hidden : false,
+    },
   }
 }
 
