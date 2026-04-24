@@ -14,11 +14,30 @@ export function ThemeSwatch({
   preset,
   active,
   onClick,
+  compact = false,
 }: {
   preset: ThemePreset
   active: boolean
   onClick: () => void
+  compact?: boolean
 }) {
+  if (compact) {
+    return (
+      <Button
+        variant="outline"
+        onClick={onClick}
+        className={cn(
+          'inline-flex min-h-11 items-center gap-2 border-2 px-3 py-2 text-left text-xs font-bold uppercase tracking-[0.16em] transition-all shadow-[4px_4px_0px_0px_var(--shadow-color)] cursor-pointer',
+          active
+            ? 'border-[var(--accent)] bg-[var(--accent-light)]/20 text-[var(--foreground)] shadow-[4px_4px_0px_0px_var(--shadow-accent)]'
+            : '',
+        )}
+      >
+        <span>{themePresetLabels[preset]}</span>
+      </Button>
+    )
+  }
+
   return (
     <Button
       variant={active ? 'primary' : 'outline'}
